@@ -1,3 +1,21 @@
+#
+# soaplib - Copyright (C) 2009 Aaron Bickell, Jamie Kirkpatrick
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+#
+
 import unittest
 import datetime
 from soaplib.etimport import ElementTree
@@ -72,6 +90,10 @@ class TestService(SoapServiceBase):
     def f(self, _from, _self, _import):
         return '1234'
 
+class TestMultipleReturnService(SoapServiceBase):
+    @soapmethod(String, _returns=(String, String, String))
+    def multi(self, s):
+        return s, 'a', 'b'
 
 class OverrideNamespaceService(SimpleWSGISoapApp):
     __tns__ = "http://someservice.com/override"
@@ -103,8 +125,19 @@ class test(unittest.TestCase):
 
     def test_override_param_names(self):
         for n in ['self', 'import', 'return', 'from']:
-            self.assertTrue(n in self._wsdl)
+            self.assertTrue(n in self._wsdl, '"%s" not in self._wsdl' % n)
 
+    def test_multiple_return(self):
+        service = TestMultipleReturnService()
+        service.wsdl('')
+        message = service.methods()[0].outMessage
+        self.assertEquals(len(message.params), 3)
+        sent_xml = message.to_xml('a','b','c')
+        response_data = message.from_xml(sent_xml)
+        self.assertEquals(len(response_data), 3)
+        self.assertEqual(response_data[0], 'a')
+        self.assertEqual(response_data[1], 'b')
+        self.assertEqual(response_data[2], 'c')
 
 def test_suite():
     loader = unittest.TestLoader()
@@ -112,3 +145,4 @@ def test_suite():
 
 if __name__== '__main__':
     unittest.TextTestRunner().run(test_suite())
+

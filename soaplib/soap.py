@@ -1,3 +1,21 @@
+#
+# soaplib - Copyright (C) 2009 Aaron Bickell, Jamie Kirkpatrick
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+#
+
 from base64 import b64encode
 from StringIO import StringIO
 
@@ -36,7 +54,7 @@ class Message(object):
         if len(self.params):
             if len(data) != len(self.params):
                 raise Exception("Parameter number mismatch expected [%s] "
-                    "got [%s]"%(len(self.params), len(data)))
+                    "got [%s] for response %s"%(len(self.params), len(data), self.name))
 
         nsmap = NamespaceLookup(self.ns)
         element = create_xml_element(self.name, nsmap, self.ns)
@@ -71,7 +89,7 @@ class Message(object):
                 if c.tag.split('}')[-1] == name:
                     nodes.append(c)
             return nodes
-
+        
         for name, serializer in self.params:
             childnodes = findall(name)
             if len(childnodes) == 0:
@@ -96,12 +114,12 @@ class Message(object):
                     "%s:%s" % (serializer.get_namespace_id(),
                         serializer.get_datatype()))
 
-        element = create_xml_element(nsmap.get('xs') + 'element', nsmap)
-        element.set('name', self.typ)
-        element.set('type', '%s:%s' % ('tns', self.typ))
+            element = create_xml_element(nsmap.get('xs') + 'element', nsmap)
+            element.set('name', self.typ)
+            element.set('type', '%s:%s' % ('tns', self.typ))
 
-        schemaDict[self.typ] = complexType
-        schemaDict[self.typ + 'Element'] = element
+            schemaDict[self.typ] = complexType
+            schemaDict[self.typ + 'Element'] = element
 
 
 class MethodDescriptor:
@@ -126,7 +144,7 @@ def from_soap(xml_string):
     '''
     Parses the xml string into the header and payload
     '''
-    root, xmlids = ElementTree.XMLID(xml_string)
+    root, xmlids = ElementTree.XMLID(xml_string.encode()) 
     if xmlids:
         resolve_hrefs(root, xmlids)
     body = None
@@ -183,11 +201,13 @@ def make_soap_envelope(message, tns='', header_elements=None):
         for h in header_elements:
             headerElement.append(h)
     body = create_xml_subelement(envelope, nsmap.get('SOAP-ENV') + 'Body')
+
     if type(message) == list:
         for m in message:
             body.append(m)
     elif message != None:
         body.append(message)
+
     return envelope
 
 

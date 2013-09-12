@@ -1,3 +1,21 @@
+#
+# soaplib - Copyright (C) 2009 Aaron Bickell, Jamie Kirkpatrick
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+#
+
 import unittest
 import datetime
 from soaplib.serializers.primitive import (Boolean, String, Repeating,
@@ -48,7 +66,16 @@ class test(unittest.TestCase):
         integer = Integer()
         element = Integer.to_xml(i)
         self.assertEquals(element.text, '12')
-        self.assertEquals('xs:int', element.get(ns.get('xsi') + 'type'))
+        self.assertEquals('xs:integer', element.get(ns.get('xsi') + 'type'))
+        value = integer.from_xml(element)
+        self.assertEquals(value, i)
+
+    def test_large_integer(self):
+        i = 128375873458473
+        integer = Integer()
+        element = Integer.to_xml(i)
+        self.assertEquals(element.text, '128375873458473')
+        self.assertEquals('xs:integer', element.get(ns.get('xsi') + 'type'))
         value = integer.from_xml(element)
         self.assertEquals(value, i)
 
@@ -77,7 +104,7 @@ class test(unittest.TestCase):
 
     def test_null(self):
         element = Null.to_xml('doesnt matter')
-        self.assertEquals('1', element.get(ns.get('xs') + 'null'))
+        self.assertEquals('1', element.get(ns.get('xs') + 'nil'))
         value = Null.from_xml(element)
         self.assertEquals(None, value)
 
@@ -104,7 +131,7 @@ class test(unittest.TestCase):
         self.assertEquals('xs:boolean', b.get(ns.get('xsi') + 'type'))
 
         b = Boolean.to_xml(None)
-        self.assertEquals('1', b.get(ns.get('xs') + 'null'))
+        self.assertEquals('1', b.get(ns.get('xs') + 'nil'))
 
         b = Boolean.from_xml(b)
         self.assertEquals(b, None)

@@ -183,7 +183,7 @@ an extremely simple example using complex, nested data.
 			global user_database
 			global userid_seq
 			user.userid = userid_seq
-			userid_seq = user_seq+1
+			userid_seq = userid_seq + 1
 			user_database[user.userid] = user
 			return user.userid
 
@@ -210,7 +210,7 @@ an extremely simple example using complex, nested data.
 	if __name__=='__main__':
 		from wsgiref.simple_server import make_server
 		server = make_server('localhost', 7789, UserManager())
-		server.start()
+		server.serve_forever()
 
 Jumping into what's new:
 
@@ -315,7 +315,7 @@ The `ClassSerializer` is used to define and serialize complex, nested structures
 	>>> u.permissions.append(p)
 	>>> element = User.to_xml(u)
 	>>> et.tostring(element)
-	'<xsd:retval><username xsi:type="xs:string">bill</username><lastname xsi:null="1" /><userid xsi:null="1" /><firstname xsi:null="1" /><permissions SOAP-ENC:arrayType="typens:Permission[1]"><Permission><application xsi:type="xs:string">email</application><feature xsi:type="xs:string">send</feature></Permission></permissions></xsd:retval>'
+	'<xsd:retval><username xsi:type="xs:string">bill</username><lastname xsi:nil="1" /><userid xsi:nil="1" /><firstname xsi:nil="1" /><permissions SOAP-ENC:arrayType="typens:Permission[1]"><Permission><application xsi:type="xs:string">email</application><feature xsi:type="xs:string">send</feature></Permission></permissions></xsd:retval>'
 	>>> User.from_xml(element).username
 	'bill'
 	>>>
